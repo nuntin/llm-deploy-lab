@@ -1,11 +1,17 @@
-# app.py
+from transformers import pipeline
+
+# public model no login
+pipe = pipeline("text-generation", model="sshleifer/tiny-gpt2", device=-1)  # CPU-safe, no token needed
+
 from fastapi import FastAPI
-from vllm import LLM
+from pydantic import BaseModel
 
 app = FastAPI()
-llm = LLM(model="mistralai/Mistral-7B-Instruct-v0.1")
 
-@app.get("/predict")
-def predict(prompt: str):
-    output = llm.generate(prompt)
-    return {"response": output}
+class Prompt(BaseModel):
+    prompt: str
+
+@app.post("/generate")
+def generate(prompt: Prompt):
+    result = pipe(prompt.prompt, max_new_tokens=50, do_sample=True)[0]['generated_text']
+    return {"result": result}
