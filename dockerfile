@@ -1,13 +1,17 @@
-# Dockerfile
-FROM python:3.10
-ENV VLLM_DEVICE=cpu
+# Use Python 3.10 as base
+FROM python:3.10-slim
+
+# Set working directory
 WORKDIR /app
 
-# ติดตั้งไลบรารีจำเป็น
-RUN pip install fastapi uvicorn streamlit requests vllm
+# Copy requirements
+COPY requirements.txt .
 
-# ใส่ model แบบ pre-load ได้ภายหลัง
+# Install dependencies
+RUN pip install --no-cache-dir -r requirements.txt
 
+# Copy app files
 COPY . .
 
-CMD ["bash"]
+# Default command
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]

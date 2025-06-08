@@ -2,4 +2,6 @@ fastapi
 uvicorn
 streamlit
 requests
+# ลองใช้ public model แทน vllm ก่อน หรือถ้าต้องใช้ให้แก้แบบมี CUDA base image
 transformers
+torch

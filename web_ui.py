@@ -2,23 +2,23 @@ import streamlit as st
 import requests
 
 # -----------------------
-# โลโก้
+# Logo
 # -----------------------
-st.image("https://i.imgur.com/OG5xKXW.png", width=100)  # เปลี่ยน URL เป็นโลโก้มึงเองได้
+st.image("https://i.imgur.com/OG5xKXW.png", width=100)
 st.title("LLM Web Interface 🌍")
 
 # -----------------------
-# ภาษา
+# Language Selection
 # -----------------------
-lang = st.radio("🌐 เลือกภาษา", ["English", "ไทย"])
+lang = st.radio("🌐 Choose language", ["English", "ไทย"])
 
 # -----------------------
-# ป้อนคำถาม
+# Input Prompt
 # -----------------------
-prompt = st.text_input("✍️ ใส่คำถามของคุณ:")
+prompt = st.text_input("✍️ Enter your question:")
 
 # -----------------------
-# Translate ก่อนส่ง (ใช้ LibreTranslate API demo)
+# Translation (Thai ↔ English) using LibreTranslate API
 # -----------------------
 def translate(text, src, tgt):
     try:
@@ -30,30 +30,30 @@ def translate(text, src, tgt):
         })
         return res.json()["translatedText"]
     except:
-        return text  # fallback
+        return text  # fallback if API fails
 
 # -----------------------
-# ส่งคำถาม และรับผลลัพธ์
+# Submit Prompt and Get Result
 # -----------------------
-if st.button("🚀 ถามเลย"):
+if st.button("🚀 Submit"):
     if lang == "ไทย":
         translated_prompt = translate(prompt, "th", "en")
     else:
         translated_prompt = prompt
 
-    # ส่ง prompt ไปยัง FastAPI
     try:
-        response = requests.get("http://llm-api:8000/predict", params={"prompt": translated_prompt})
-        raw_output = response.json()["response"]
+        # Send prompt to FastAPI backend
+        response = requests.post("http://llm-api:8000/generate", json={"prompt": translated_prompt})
+        raw_output = response.json()["result"]  # use "result" as returned from FastAPI
     except Exception as e:
-        st.error(f"❌ เกิดข้อผิดพลาด: {e}")
+        st.error(f"❌ Error occurred: {e}")
         raw_output = ""
 
-    # แปลคำตอบกลับ (ถ้าเป็นภาษาไทย)
+    # Translate output back to Thai if needed
     if lang == "ไทย" and raw_output:
         final_output = translate(raw_output, "en", "th")
     else:
         final_output = raw_output
 
-    st.markdown("### 🤖 คำตอบ")
+    st.markdown("### 🤖 Answer")
     st.write(final_output)
